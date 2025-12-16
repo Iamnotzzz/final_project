@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib
 
-matplotlib.rcParams['font.family'] = ['SimHei', 'Arial Unicode MS', 'sans-serif']
+
+matplotlib.rcParams['font.family'] = ['Arial Unicode MS', 'Heiti TC', 'Microsoft YaHei', 'SimHei', 'sans-serif']
 matplotlib.rcParams['axes.unicode_minus'] = False
 
 class SecondHandSystemGUI:
@@ -177,7 +178,7 @@ class SecondHandSystemGUI:
         
         # 主内容区
         main_content = tb.Frame(self.root)
-        main_content.pack(fill=BOTH, expand=True, padding=10)
+        main_content.pack(fill=BOTH, expand=True, padx=10, pady=10)
         
         # 左侧边栏
         sidebar = tb.Frame(main_content, width=220)

@@ -1,7 +1,7 @@
 # 服务器配置
 SERVER_HOST = 'localhost'
 SERVER_PORT = 8888
-BUFFER_SIZE = 4096
+BUFFER_SIZE = 1048576
 
 # 数据库配置
 DATABASE_NAME = 'campus_secondhand.db'
