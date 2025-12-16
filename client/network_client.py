@@ -140,3 +140,13 @@ class NetworkClient:
     def get_all_orders(self):
         """获取所有订单（管理员功能）"""
         return self.send_request('get_all_orders')
+    
+    # --- 在 client/network_client.py 的 NetworkClient 类中添加 ---
+
+    def get_goods_category_stats(self):
+        """获取商品类别统计"""
+        return self.send_request('get_goods_category_stats')
+
+    def get_daily_sales_stats(self):
+        """获取每日销量统计"""
+        return self.send_request('get_daily_sales_stats')

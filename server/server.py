@@ -98,6 +98,10 @@ class Server:
             return self.handle_delete_user(data)
         elif action == 'get_all_orders':
             return self.handle_get_all_orders(data)
+        elif action == 'get_goods_category_stats':
+            return self.handle_get_goods_category_stats()
+        elif action == 'get_daily_sales_stats':
+            return self.handle_get_daily_sales_stats()
         else:
             return {'success': False, 'message': '未知操作'}
     
@@ -269,6 +273,14 @@ class Server:
         """处理获取所有订单（管理员功能）"""
         orders = self.db.get_all_orders()
         return {'success': True, 'orders': orders}
+    
+    def handle_get_goods_category_stats(self):
+        stats = self.db.get_goods_category_stats()
+        return {'success': True, 'stats': stats}
+
+    def handle_get_daily_sales_stats(self):
+        stats = self.db.get_daily_sales_stats()
+        return {'success': True, 'stats': stats}
     
     def stop(self):
         """停止服务器"""

@@ -421,3 +421,39 @@ class Database:
         orders = [dict(row) for row in cursor.fetchall()]
         conn.close()
         return orders
+    # --- 在 server/database.py 的 Database 类中添加以下方法 ---
+
+    def get_goods_category_stats(self):
+        """获取商品类别数量统计（用于饼图）"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            # 统计每个类别的商品数量
+            cursor.execute('SELECT category, COUNT(*) FROM goods GROUP BY category')
+            # 转换为字典: {'电子产品': 10, '书籍': 5}
+            stats = {row[0]: row[1] for row in cursor.fetchall()}
+            return stats
+        finally:
+            conn.close()
+
+    def get_daily_sales_stats(self):
+        """获取每日交易金额统计（用于柱状图）"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        try:
+            # 截取时间字符串的前10位(YYYY-MM-DD)作为日期进行分组统计
+            # 排除已取消(cancelled)的订单
+            cursor.execute('''
+                SELECT substr(create_time, 1, 10) as date, SUM(price) 
+                FROM orders 
+                WHERE status != 'cancelled' 
+                GROUP BY date 
+                ORDER BY date DESC 
+                LIMIT 7
+            ''')
+            # 转换为列表: [('2023-12-01', 100.0), ...]
+            stats = [(row[0], row[1]) for row in cursor.fetchall()]
+            # 为了图表显示正常，我们将顺序反转为按日期升序
+            return stats[::-1]
+        finally:
+            conn.close()
