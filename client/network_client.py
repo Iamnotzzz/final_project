@@ -39,6 +39,12 @@ class NetworkClient:
             response_data = self.client.recv(BUFFER_SIZE).decode('utf-8')
             response = deserialize_data(response_data)
             
+            # 检查是否需要强制退出
+            if response.get('force_logout'):
+                # 断开连接并返回特殊标志
+                self.disconnect()
+                response['force_logout_disconnected'] = True
+            
             return response
         except Exception as e:
             print(f"发送请求失败: {e}")

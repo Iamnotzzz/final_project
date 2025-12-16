@@ -79,7 +79,7 @@ class SecondHandSystemGUI:
         """注册窗口"""
         reg_win = tb.Toplevel(self.root)
         reg_win.title("用户注册")
-        reg_win.geometry("450x500")
+        reg_win.geometry("450x550")
         self.center_window(reg_win)
         
         tb.Label(reg_win, text="创建新账户", 
@@ -152,6 +152,8 @@ class SecondHandSystemGUI:
         if result['success']:
             self.current_user = result['user']
             messagebox.showinfo("欢迎", f"欢迎回来，{username}！")
+            if self.check_force_logout(result):
+                return
             if self.current_user['role'] == ADMIN_ROLE:
                 self.admin_main_window()
             else:
@@ -511,6 +513,11 @@ class SecondHandSystemGUI:
         if messagebox.askyesno("确认购买", 
                               f"商品：{name}\n价格：¥{price:.2f}\n\n确认购买吗？"):
             result = self.network_client.purchase_goods(goods_id, self.current_user['user_id'])
+            
+            # 检查是否被强制退出
+            if self.check_force_logout(result):
+                return
+                
             if result['success']:
                 messagebox.showinfo("成功", "购买成功！")
                 self.refresh_goods_list()
@@ -522,7 +529,7 @@ class SecondHandSystemGUI:
         """充值窗口"""
         win = tb.Toplevel(self.root)
         win.title("账户充值")
-        win.geometry("400x300")
+        win.geometry("400x350")
         self.center_window(win)
         
         frame = tb.Frame(win, padding=30)
@@ -1262,6 +1269,15 @@ class SecondHandSystemGUI:
             balance = self.get_current_balance()
             self.balance_label.config(text=f"¥{balance:.2f}")
 
+    def check_force_logout(self, response):
+        """检查是否需要强制退出"""
+        if response.get('force_logout_disconnected'):
+            messagebox.showerror("账户已被删除", response.get('message', '您的账户已被管理员删除'))
+            self.current_user = None
+            self.login_window()
+            return True
+        return False
+        
     def logout(self):
         """退出登录"""
         self.current_user = None

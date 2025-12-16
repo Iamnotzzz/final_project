@@ -59,8 +59,8 @@ class Server:
             print(f"处理客户端 {address} 时发生错误: {e}")
         finally:
             client_socket.close()
-            if address in self.clients:
-                del self.clients[address]
+            if client_socket in self.clients:
+                del self.clients[client_socket]
             print(f"客户端 {address} 断开连接")
     
     def process_request(self, request, client_socket):
@@ -128,7 +128,7 @@ class Server:
         user = self.db.login_user(username, password)
         if user:
             # 记录登录用户
-            self.clients[client_socket.getpeername()] = user
+            self.clients[client_socket] = user
             return {'success': True, 'user': user}
         else:
             return {'success': False, 'message': '用户名或密码错误'}
@@ -266,7 +266,29 @@ class Server:
         if not user_id:
             return {'success': False, 'message': '用户ID不能为空'}
         
+        # 检查用户是否在线，如果在线则强制断开连接
+        online_sockets = []
+        for client_socket, user_info in self.clients.items():
+            if user_info and user_info.get('user_id') == user_id:
+                online_sockets.append(client_socket)
+        
+        # 删除用户
         result = self.db.delete_user(user_id)
+        
+        # 如果删除成功且用户在线，发送强制退出通知
+        if result['success'] and online_sockets:
+            for client_socket in online_sockets:
+                try:
+                    force_logout_response = {
+                        'success': False, 
+                        'message': '您的账户已被管理员删除，即将强制退出',
+                        'force_logout': True
+                    }
+                    response_data = serialize_data(force_logout_response)
+                    client_socket.send(response_data.encode('utf-8'))
+                except Exception as e:
+                    print(f"发送强制退出通知失败: {e}")
+        
         return result
     
     def handle_get_all_orders(self, data):
