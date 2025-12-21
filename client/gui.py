@@ -79,7 +79,8 @@ class SecondHandSystemGUI:
         """注册窗口"""
         reg_win = tb.Toplevel(self.root)
         reg_win.title("用户注册")
-        reg_win.geometry("450x550")
+        reg_win.geometry("450x620")
+        reg_win.minsize(450, 620)
         self.center_window(reg_win)
         
         tb.Label(reg_win, text="创建新账户", 
@@ -194,8 +195,14 @@ class SecondHandSystemGUI:
                                       font=("Arial", 18, "bold"), 
                                       bootstyle="info")
         self.balance_label.pack()
-        tb.Button(balance_frame, text="充值", bootstyle="warning", 
-                 command=self.recharge_window).pack(fill=X, pady=(10, 0))
+        
+        # 余额操作按钮
+        balance_btn_frame = tb.Frame(balance_frame)
+        balance_btn_frame.pack(fill=X, pady=(10, 0))
+        tb.Button(balance_btn_frame, text="充值", bootstyle="warning", 
+                 command=self.recharge_window).pack(side=LEFT, fill=X, expand=True, padx=(0, 5))
+        tb.Button(balance_btn_frame, text="刷新", bootstyle="info-outline", 
+                 command=self.refresh_balance).pack(side=LEFT, fill=X, expand=True, padx=(5, 0))
         
         # 功能菜单
         tb.Label(sidebar, text="📋 功能菜单", 
@@ -261,6 +268,9 @@ class SecondHandSystemGUI:
         
         self.refresh_balance()
         self.refresh_goods_list()
+        
+        # 启动定期刷新余额的定时器
+        self.schedule_balance_refresh()
 
     # =================== 用户功能窗口 ===================
     
@@ -268,7 +278,8 @@ class SecondHandSystemGUI:
         """发布商品窗口"""
         win = tb.Toplevel(self.root)
         win.title("发布闲置商品")
-        win.geometry("500x600")
+        win.geometry("500x650")
+        win.minsize(500, 650)
         self.center_window(win)
         
         layout = tb.Frame(win, padding=25)
@@ -354,7 +365,8 @@ class SecondHandSystemGUI:
         """我的商品窗口"""
         win = tb.Toplevel(self.root)
         win.title("我的商品")
-        win.geometry("800x600")
+        win.geometry("800x650")
+        win.minsize(800, 650)
         self.center_window(win)
         
         # 标题
@@ -438,7 +450,8 @@ class SecondHandSystemGUI:
         """我的订单窗口"""
         win = tb.Toplevel(self.root)
         win.title("我的订单")
-        win.geometry("900x600")
+        win.geometry("900x650")
+        win.minsize(900, 650)
         self.center_window(win)
         
         # 标题
@@ -529,7 +542,8 @@ class SecondHandSystemGUI:
         """充值窗口"""
         win = tb.Toplevel(self.root)
         win.title("账户充值")
-        win.geometry("400x350")
+        win.geometry("400x400")
+        win.minsize(400, 400)
         self.center_window(win)
         
         frame = tb.Frame(win, padding=30)
@@ -584,7 +598,8 @@ class SecondHandSystemGUI:
         """搜索商品窗口"""
         win = tb.Toplevel(self.root)
         win.title("搜索商品")
-        win.geometry("400x250")
+        win.geometry("450x350")
+        win.minsize(450, 350)
         self.center_window(win)
         
         frame = tb.Frame(win, padding=25)
@@ -710,7 +725,8 @@ class SecondHandSystemGUI:
         """用户管理窗口"""
         win = tb.Toplevel(self.root)
         win.title("用户管理")
-        win.geometry("900x600")
+        win.geometry("900x650")
+        win.minsize(900, 650)
         self.center_window(win)
         
         # 标题
@@ -793,7 +809,8 @@ class SecondHandSystemGUI:
         """商品管理窗口"""
         win = tb.Toplevel(self.root)
         win.title("商品管理")
-        win.geometry("1000x600")
+        win.geometry("1000x650")
+        win.minsize(1000, 650)
         self.center_window(win)
         
         # 标题
@@ -872,7 +889,8 @@ class SecondHandSystemGUI:
         """订单管理窗口"""
         win = tb.Toplevel(self.root)
         win.title("订单管理")
-        win.geometry("1000x600")
+        win.geometry("1000x650")
+        win.minsize(1000, 650)
         self.center_window(win)
         
         # 标题
@@ -933,7 +951,8 @@ class SecondHandSystemGUI:
         """数据可视化看板"""
         stats_win = tb.Toplevel(self.root)
         stats_win.title("数据可视化看板")
-        stats_win.geometry("1200x700")
+        stats_win.geometry("1200x750")
+        stats_win.minsize(1200, 750)
         self.center_window(stats_win)
         
         # 标题
@@ -1047,7 +1066,8 @@ class SecondHandSystemGUI:
         """生成模拟测试数据窗口"""
         win = tb.Toplevel(self.root)
         win.title("生成测试数据")
-        win.geometry("700x600")
+        win.geometry("700x650")
+        win.minsize(700, 650)
         self.center_window(win)
         
         # 标题
@@ -1278,6 +1298,13 @@ class SecondHandSystemGUI:
             return True
         return False
         
+    def schedule_balance_refresh(self):
+        """定期刷新余额"""
+        if hasattr(self, 'balance_label') and self.current_user:
+            self.refresh_balance()
+            # 每30秒刷新一次余额
+            self.root.after(30000, self.schedule_balance_refresh)
+
     def logout(self):
         """退出登录"""
         self.current_user = None
