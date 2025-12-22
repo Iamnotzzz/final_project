@@ -66,3 +66,8 @@ venv.bak/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# 文档文件
+*.pptx
+*.zip
+*.pdf

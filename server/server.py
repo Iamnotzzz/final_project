@@ -40,7 +40,16 @@ class Server:
         """处理客户端请求"""
         try:
             while True:
-                data = client_socket.recv(BUFFER_SIZE)
+                # 先接收数据长度头（4字节）
+                length_data = self._recv_exact(client_socket, 4)
+                if not length_data:
+                    break
+                
+                # 解析数据长度
+                data_length = int.from_bytes(length_data, byteorder='big')
+                
+                # 接收完整的数据
+                data = self._recv_exact(client_socket, data_length)
                 if not data:
                     break
                 
@@ -49,11 +58,18 @@ class Server:
                     response = self.process_request(request, client_socket)
                     
                     response_data = serialize_data(response)
+                    # 发送数据长度头
+                    response_length = len(response_data.encode('utf-8'))
+                    client_socket.send(response_length.to_bytes(4, byteorder='big'))
+                    # 发送实际数据
                     client_socket.send(response_data.encode('utf-8'))
                     
-                except json.JSONDecodeError:
-                    error_response = {'success': False, 'message': '数据格式错误'}
-                    client_socket.send(serialize_data(error_response).encode('utf-8'))
+                except json.JSONDecodeError as e:
+                    error_response = {'success': False, 'message': f'数据格式错误: {str(e)}'}
+                    error_data = serialize_data(error_response)
+                    error_length = len(error_data.encode('utf-8'))
+                    client_socket.send(error_length.to_bytes(4, byteorder='big'))
+                    client_socket.send(error_data.encode('utf-8'))
                 
         except Exception as e:
             print(f"处理客户端 {address} 时发生错误: {e}")
@@ -62,6 +78,16 @@ class Server:
             if client_socket in self.clients:
                 del self.clients[client_socket]
             print(f"客户端 {address} 断开连接")
+    
+    def _recv_exact(self, client_socket, length):
+        """精确接收指定长度的数据"""
+        data = b''
+        while len(data) < length:
+            chunk = client_socket.recv(length - len(data))
+            if not chunk:
+                return None
+            data += chunk
+        return data
     
     def process_request(self, request, client_socket):
         """处理客户端请求"""

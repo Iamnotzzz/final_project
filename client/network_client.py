@@ -33,11 +33,27 @@ class NetworkClient:
         try:
             request = {'action': action, 'data': data or {}}
             request_data = serialize_data(request)
+            request_bytes = request_data.encode('utf-8')
             
-            self.client.send(request_data.encode('utf-8'))
+            # 发送数据长度头
+            request_length = len(request_bytes)
+            self.client.send(request_length.to_bytes(4, byteorder='big'))
+            # 发送实际数据
+            self.client.send(request_bytes)
             
-            response_data = self.client.recv(BUFFER_SIZE).decode('utf-8')
-            response = deserialize_data(response_data)
+            # 接收响应长度头
+            length_data = self._recv_exact(4)
+            if not length_data:
+                return {'success': False, 'message': '接收响应长度失败'}
+            
+            response_length = int.from_bytes(length_data, byteorder='big')
+            
+            # 接收完整响应数据
+            response_bytes = self._recv_exact(response_length)
+            if not response_bytes:
+                return {'success': False, 'message': '接收响应数据失败'}
+            
+            response = deserialize_data(response_bytes.decode('utf-8'))
             
             # 检查是否需要强制退出
             if response.get('force_logout'):
@@ -49,6 +65,16 @@ class NetworkClient:
         except Exception as e:
             print(f"发送请求失败: {e}")
             return {'success': False, 'message': '网络请求失败'}
+    
+    def _recv_exact(self, length):
+        """精确接收指定长度的数据"""
+        data = b''
+        while len(data) < length:
+            chunk = self.client.recv(length - len(data))
+            if not chunk:
+                return None
+            data += chunk
+        return data
     
     def register(self, username, password, contact=None):
         """用户注册"""

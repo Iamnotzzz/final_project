@@ -1,6 +1,11 @@
 # 服务器配置
-SERVER_HOST = 'localhost'
-SERVER_PORT = 8888
+# SERVER_HOST = 'localhost'
+# SERVER_PORT = 8888
+
+# 远程服务器
+SERVER_HOST = '60.205.170.126'
+SERVER_PORT = 8889
+
 BUFFER_SIZE = 1048576
 
 # 数据库配置

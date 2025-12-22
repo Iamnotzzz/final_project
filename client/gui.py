@@ -8,7 +8,15 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib
 
 
-matplotlib.rcParams['font.family'] = ['Arial Unicode MS', 'Heiti TC', 'Microsoft YaHei', 'SimHei', 'sans-serif']
+# 设置matplotlib中文字体
+import platform
+system = platform.system()
+if system == 'Windows':
+    matplotlib.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'Arial Unicode MS']
+elif system == 'Darwin':  # macOS
+    matplotlib.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'Heiti TC']
+else:  # Linux
+    matplotlib.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Liberation Sans']
 matplotlib.rcParams['axes.unicode_minus'] = False
 
 class SecondHandSystemGUI:
